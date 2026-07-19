@@ -75,6 +75,11 @@ export const PERMISSIONS = {
   CERTIFICATES_REISSUE: "certificates.reissue",
   CERTIFICATES_TEMPLATES: "certificates.templates",
 
+  // Notifications
+  NOTIFICATIONS_VIEW: "notifications.view",
+  NOTIFICATIONS_MANAGE: "notifications.manage",
+  NOTIFICATIONS_TEMPLATES: "notifications.templates",
+
   // Audit
   AUDIT_VIEW: "audit.view",
 } as const;
