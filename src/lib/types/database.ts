@@ -1,5 +1,110 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+export type StudentStatus = 'active' | 'pending' | 'suspended' | 'graduated' | 'withdrawn';
+
+export interface Student {
+  id: string;
+  tenant_id: string;
+  organization_id: string | null;
+  branch_id: string | null;
+  user_id: string | null;
+  student_number: string;
+  registration_number: string | null;
+  national_id: string | null;
+  first_name_ar: string | null;
+  last_name_ar: string | null;
+  first_name_en: string | null;
+  last_name_en: string | null;
+  photo_url: string | null;
+  date_of_birth: string | null;
+  age: number | null;
+  gender: string | null;
+  nationality: string | null;
+  mobile: string | null;
+  email: string | null;
+  address: string | null;
+  city: string | null;
+  country: string;
+  status: StudentStatus;
+  academic_level: string;
+  guardian_name: string | null;
+  guardian_phone: string | null;
+  guardian_email: string | null;
+  guardian_relationship: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface Trainer {
+  id: string;
+  tenant_id: string;
+  organization_id: string | null;
+  branch_id: string | null;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  specialization: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface Course {
+  id: string;
+  tenant_id: string;
+  organization_id: string | null;
+  branch_id: string | null;
+  name: string;
+  code: string;
+  description: string | null;
+  status: string;
+  price: number;
+  duration_hours: number | null;
+  max_students: number | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface Payment {
+  id: string;
+  tenant_id: string;
+  organization_id: string | null;
+  branch_id: string | null;
+  student_id: string;
+  invoice_id: string | null;
+  payment_number: string;
+  amount: number;
+  currency: string;
+  payment_method: string;
+  payment_date: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  tenant_id: string;
+  organization_id: string | null;
+  branch_id: string | null;
+  student_id: string;
+  class_id: string;
+  attendance_date: string;
+  status: string;
+  check_in_time: string | null;
+  check_out_time: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
 export type AppRole =
   | 'super_admin'
   | 'owner'
@@ -209,6 +314,31 @@ export interface Database {
         Row: LoginAudit;
         Insert: Partial<LoginAudit>;
         Update: Partial<LoginAudit>;
+      };
+      students: {
+        Row: Student;
+        Insert: Partial<Student> & { tenant_id: string; student_number: string };
+        Update: Partial<Student>;
+      };
+      trainers: {
+        Row: Trainer;
+        Insert: Partial<Trainer> & { tenant_id: string; first_name: string; last_name: string };
+        Update: Partial<Trainer>;
+      };
+      courses: {
+        Row: Course;
+        Insert: Partial<Course> & { tenant_id: string; name: string; code: string };
+        Update: Partial<Course>;
+      };
+      payments: {
+        Row: Payment;
+        Insert: Partial<Payment> & { tenant_id: string; student_id: string; payment_number: string; amount: number };
+        Update: Partial<Payment>;
+      };
+      attendance_records: {
+        Row: AttendanceRecord;
+        Insert: Partial<AttendanceRecord> & { tenant_id: string; student_id: string; class_id: string; attendance_date: string; status: string };
+        Update: Partial<AttendanceRecord>;
       };
     };
     Functions: {
