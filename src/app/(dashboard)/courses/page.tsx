@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function CoursesPage() {
   return (
@@ -12,7 +13,7 @@ export default function CoursesPage() {
           <h1 className="text-3xl font-bold">الدورات</h1>
           <p className="text-muted-foreground">إدارة الدورات التدريبية</p>
         </div>
-        <Button><Plus className="ml-2 h-4 w-4" /> إضافة دورة</Button>
+        <Button asChild><Link href="/courses/new"><Plus className="ml-2 h-4 w-4" /> إضافة دورة</Link></Button>
       </div>
       <Card>
         <CardContent className="p-12">

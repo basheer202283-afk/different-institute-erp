@@ -3,12 +3,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import type { Profile, UserRole } from "@/lib/types/database";
+import type { Profile, AppRole } from "@/lib/types/database";
 
 interface AuthState {
   user: User | null;
   profile: Profile | null;
-  roles: UserRole[];
+  role: AppRole | null;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
@@ -18,29 +18,10 @@ export function useAuth() {
   const [state, setState] = useState<AuthState>({
     user: null,
     profile: null,
-    roles: [],
+    role: null,
     isLoading: true,
     isAuthenticated: false,
   });
-
-  const fetchProfile = useCallback(async (userId: string) => {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    if (profile) {
-      const profileData = profile as unknown as Profile;
-      setState({
-        user: null, // Will be set by caller
-        profile: profileData,
-        roles: [profileData.role || "trainer"],
-        isLoading: false,
-        isAuthenticated: true,
-      });
-    }
-  }, [supabase]);
 
   useEffect(() => {
     const init = async () => {
@@ -51,17 +32,17 @@ export function useAuth() {
           .select("*")
           .eq("id", session.user.id)
           .single();
-
+        
         const profileData = profile as unknown as Profile | null;
         setState({
           user: session.user,
           profile: profileData,
-          roles: profileData ? [profileData.role] : [],
+          role: profileData?.role ?? null,
           isLoading: false,
           isAuthenticated: true,
         });
       } else {
-        setState({ user: null, profile: null, roles: [], isLoading: false, isAuthenticated: false });
+        setState({ user: null, profile: null, role: null, isLoading: false, isAuthenticated: false });
       }
     };
 
@@ -69,14 +50,26 @@ export function useAuth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        await fetchProfile(session.user.id);
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+        const profileData = profile as unknown as Profile | null;
+        setState({
+          user: session.user,
+          profile: profileData,
+          role: profileData?.role ?? null,
+          isLoading: false,
+          isAuthenticated: true,
+        });
       } else if (event === "SIGNED_OUT") {
-        setState({ user: null, profile: null, roles: [], isLoading: false, isAuthenticated: false });
+        setState({ user: null, profile: null, role: null, isLoading: false, isAuthenticated: false });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase, fetchProfile]);
+  }, [supabase]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -85,8 +78,7 @@ export function useAuth() {
 
   const signUp = useCallback(async (email: string, password: string, metadata?: Record<string, string>) => {
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email, password,
       options: { data: metadata },
     });
     return { data, error };
@@ -94,7 +86,7 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
-    setState({ user: null, profile: null, roles: [], isLoading: false, isAuthenticated: false });
+    setState({ user: null, profile: null, role: null, isLoading: false, isAuthenticated: false });
     return { error };
   }, [supabase]);
 
@@ -105,22 +97,12 @@ export function useAuth() {
     return { data, error };
   }, [supabase]);
 
-  const hasRole = useCallback((role: UserRole) => {
-    return state.roles.includes(role) || state.roles.includes("owner");
-  }, [state.roles]);
+  const hasRole = useCallback((roles: AppRole | AppRole[]) => {
+    if (!state.role) return false;
+    if (state.role === "owner") return true;
+    const roleArray = Array.isArray(roles) ? roles : [roles];
+    return roleArray.includes(state.role);
+  }, [state.role]);
 
-  const hasAnyRole = useCallback((roles: UserRole[]) => {
-    if (state.roles.includes("owner")) return true;
-    return roles.some((r) => state.roles.includes(r));
-  }, [state.roles]);
-
-  return {
-    ...state,
-    signIn,
-    signUp,
-    signOut,
-    resetPassword,
-    hasRole,
-    hasAnyRole,
-  };
+  return { ...state, signIn, signUp, signOut, resetPassword, hasRole };
 }

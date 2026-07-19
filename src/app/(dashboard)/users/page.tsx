@@ -18,8 +18,8 @@ export default function UsersPage() {
         <CardContent className="p-12">
           <div className="text-center">
             <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-semibold">لا يوجد مستخدمين</h3>
-            <p className="text-muted-foreground mt-1">ابدأ بإضافة مستخدمين</p>
+            <h3 className="text-lg font-semibold">إدارة المستخدمين</h3>
+            <p className="text-muted-foreground mt-1">إضافة وإدارة المستخدمين والأدوار</p>
           </div>
         </CardContent>
       </Card>

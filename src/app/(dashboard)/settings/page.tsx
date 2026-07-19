@@ -8,12 +8,10 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">الإعدادات</h1>
-        <p className="text-muted-foreground">إعدادات النظام</p>
+        <p className="text-muted-foreground">إعدادات النظام والمعهد</p>
       </div>
       <Card>
-        <CardHeader>
-          <CardTitle>إعدادات عامة</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>إعدادات عامة</CardTitle></CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">سيتم إضافة الإعدادات قريباً</p>
         </CardContent>

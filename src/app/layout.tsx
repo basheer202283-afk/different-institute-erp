@@ -10,12 +10,8 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "معهد المختلفة - نظام الإدارة",
-    template: "%s | معهد المختلفة",
-  },
-  description: "نظام إدارة معهد المختلفة للتدريب",
-  robots: { index: false, follow: false },
+  title: { default: "معهد المختلفة | Different Institute", template: "%s | معهد المختلفة" },
+  description: "نظام إدارة معهد المختلفة للتدريب النسائي",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

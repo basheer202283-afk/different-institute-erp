@@ -6,12 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
 export function formatDate(date: string | Date): string {
@@ -21,6 +16,14 @@ export function formatDate(date: string | Date): string {
     month: "long",
     day: "numeric",
   }).format(d);
+}
+
+export function formatCurrency(amount: number, currency = "YER"): string {
+  return new Intl.NumberFormat("ar-YE", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 0,
+  }).format(amount);
 }
 
 export function formatRelativeTime(date: string | Date): string {
@@ -34,4 +37,25 @@ export function formatRelativeTime(date: string | Date): string {
   if (hours < 24) return `منذ ${hours} ساعة`;
   const days = Math.floor(hours / 24);
   return `منذ ${days} يوم`;
+}
+
+export const ROLE_LABELS: Record<string, string> = {
+  owner: "المالك",
+  manager: "مدير المعهد",
+  reception: "الاستقبال",
+  accountant: "المحاسب",
+  trainer: "المدرب",
+};
+
+export const ROLE_LABELS_EN: Record<string, string> = {
+  owner: "Owner",
+  manager: "Institute Manager",
+  reception: "Reception",
+  accountant: "Accountant",
+  trainer: "Trainer",
+};
+
+export function canAccess(userRole: string, requiredRoles: string[]): boolean {
+  if (userRole === "owner") return true;
+  return requiredRoles.includes(userRole);
 }

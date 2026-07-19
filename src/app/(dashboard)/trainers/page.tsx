@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function TrainersPage() {
   return (
@@ -12,7 +13,7 @@ export default function TrainersPage() {
           <h1 className="text-3xl font-bold">المدربات</h1>
           <p className="text-muted-foreground">إدارة بيانات المدربات</p>
         </div>
-        <Button><Plus className="ml-2 h-4 w-4" /> إضافة مدربة</Button>
+        <Button asChild><Link href="/trainers/new"><Plus className="ml-2 h-4 w-4" /> إضافة مدربة</Link></Button>
       </div>
       <Card>
         <CardContent className="p-12">

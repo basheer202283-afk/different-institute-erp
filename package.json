@@ -2,7 +2,7 @@
   "name": "different-female-institute-erp",
   "version": "1.0.0",
   "private": true,
-  "description": "Different Female Institute ERP - Production Ready",
+  "description": "Different Female Training Institute - Enterprise ERP System",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -35,8 +35,7 @@
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.23.8",
-    "zustand": "^4.5.5"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

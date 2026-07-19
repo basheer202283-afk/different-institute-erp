@@ -14,8 +14,8 @@ export default function ReportsPage() {
         <CardContent className="p-12">
           <div className="text-center">
             <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-semibold">قيد التطوير</h3>
-            <p className="text-muted-foreground mt-1">سيتم إضافة هذا القسم قريباً</p>
+            <h3 className="text-lg font-semibold">التقارير</h3>
+            <p className="text-muted-foreground mt-1">إنشاء وتصدير التقارير المختلفة</p>
           </div>
         </CardContent>
       </Card>

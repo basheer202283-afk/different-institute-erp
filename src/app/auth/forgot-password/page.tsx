@@ -19,9 +19,7 @@ export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
     setError(null);
@@ -38,7 +36,6 @@ export default function ForgotPasswordPage() {
         <Link href="/auth/login" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowRight className="h-4 w-4" /> العودة لتسجيل الدخول
         </Link>
-
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -46,10 +43,9 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
           <h1 className="text-2xl font-bold">استعادة كلمة المرور</h1>
-          <p className="text-muted-foreground mt-1">أدخل بريدك الإلكتروني وسنرسل لك رابط الاستعادة</p>
+          <p className="text-muted-foreground mt-1">أدخل بريدك الإلكتروني</p>
         </div>
-
-        <Card className="border-0 shadow-xl bg-card/80 backdrop-blur">
+        <Card className="border-0 shadow-xl">
           <CardContent className="p-6">
             {sent ? (
               <div className="text-center space-y-4">

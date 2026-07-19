@@ -14,8 +14,8 @@ export default function FinancePage() {
         <CardContent className="p-12">
           <div className="text-center">
             <CreditCard className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-semibold">قيد التطوير</h3>
-            <p className="text-muted-foreground mt-1">سيتم إضافة هذا القسم قريباً</p>
+            <h3 className="text-lg font-semibold">الفواتير والمدفوعات</h3>
+            <p className="text-muted-foreground mt-1">إدارة الفواتير ومدفوعات الطالبات</p>
           </div>
         </CardContent>
       </Card>

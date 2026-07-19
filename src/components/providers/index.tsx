@@ -9,7 +9,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <QueryProvider>
         {children}
-        <Toaster richColors position="top-right" />
+        <Toaster richColors position="top-right" dir="rtl" />
       </QueryProvider>
     </ThemeProvider>
   );

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Users, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 export default function StudentsPage() {
   return (
@@ -13,9 +14,8 @@ export default function StudentsPage() {
           <h1 className="text-3xl font-bold">الطالبات</h1>
           <p className="text-muted-foreground">إدارة بيانات الطالبات</p>
         </div>
-        <Button><Plus className="ml-2 h-4 w-4" /> إضافة طالبة</Button>
+        <Button asChild><Link href="/students/new"><Plus className="ml-2 h-4 w-4" /> إضافة طالبة</Link></Button>
       </div>
-
       <Card>
         <CardContent className="p-4">
           <div className="relative max-w-sm">
@@ -24,7 +24,6 @@ export default function StudentsPage() {
           </div>
         </CardContent>
       </Card>
-
       <Card>
         <CardContent className="p-12">
           <div className="text-center">
