@@ -10,7 +10,7 @@ export default function NewTrainerPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild><Link href="/trainer"><ArrowRight className="h-4 w-4" /></Link></Button>
+        <Button variant="ghost" size="icon" asChild><Link href="/trainers"><ArrowRight className="h-4 w-4" /></Link></Button>
         <div>
           <h1 className="text-2xl font-bold">إضافة مدربة جديدة</h1>
           <p className="text-muted-foreground">أدخل بيانات المدربة</p>
@@ -27,7 +27,7 @@ export default function NewTrainerPage() {
             <div><label className="text-sm font-medium">التخصص</label><Input placeholder="التخصص" className="mt-1" /></div>
           </div>
           <div className="flex justify-end gap-3 mt-6">
-            <Button variant="outline" asChild><Link href="/trainer">إلغاء</Link></Button>
+            <Button variant="outline" asChild><Link href="/trainers">إلغاء</Link></Button>
             <Button><Save className="ml-2 h-4 w-4" /> حفظ</Button>
           </div>
         </CardContent>

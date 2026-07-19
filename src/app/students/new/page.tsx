@@ -10,7 +10,7 @@ export default function NewStudentPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild><Link href="/student"><ArrowRight className="h-4 w-4" /></Link></Button>
+        <Button variant="ghost" size="icon" asChild><Link href="/students"><ArrowRight className="h-4 w-4" /></Link></Button>
         <div>
           <h1 className="text-2xl font-bold">إضافة طالبة جديدة</h1>
           <p className="text-muted-foreground">أدخل بيانات الطالبة</p>
@@ -28,7 +28,7 @@ export default function NewStudentPage() {
             <div><label className="text-sm font-medium">تاريخ الميلاد</label><Input type="date" className="mt-1" /></div>
           </div>
           <div className="flex justify-end gap-3 mt-6">
-            <Button variant="outline" asChild><Link href="/student">إلغاء</Link></Button>
+            <Button variant="outline" asChild><Link href="/students">إلغاء</Link></Button>
             <Button><Save className="ml-2 h-4 w-4" /> حفظ</Button>
           </div>
         </CardContent>
