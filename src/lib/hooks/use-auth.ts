@@ -15,7 +15,7 @@ interface AuthState {
 }
 
 export function useAuth() {
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   const [state, setState] = useState<AuthState>({
     user: null,
     profile: null,
@@ -24,58 +24,88 @@ export function useAuth() {
     isAuthenticated: false,
   });
 
-  const fetchProfile = useCallback(async (userId: string) => {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    const profileData = profile as unknown as Profile | null;
-    setState({
-      user: null,
-      profile: profileData,
-      role: profileData?.role ?? null,
-      isLoading: false,
-      isAuthenticated: true,
-    });
-  }, [supabase]);
-
   useEffect(() => {
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
+    let mounted = true;
 
-        const profileData = profile as unknown as Profile | null;
-        setState({
-          user: session.user,
-          profile: profileData,
-          role: profileData?.role ?? null,
-          isLoading: false,
-          isAuthenticated: true,
-        });
-      } else {
-        setState({ user: null, profile: null, role: null, isLoading: false, isAuthenticated: false });
+    const init = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+
+          if (!mounted) return;
+
+          const profileData = profile as unknown as Profile | null;
+          setState({
+            user: session.user,
+            profile: profileData,
+            role: profileData?.role ?? null,
+            isLoading: false,
+            isAuthenticated: true,
+          });
+        } else {
+          setState({ user: null, profile: null, role: null, isLoading: false, isAuthenticated: false });
+        }
+      } catch (error) {
+        console.error("Auth init error:", error);
+        if (mounted) {
+          setState({ user: null, profile: null, role: null, isLoading: false, isAuthenticated: false });
+        }
       }
     };
 
     init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
       if (event === "SIGNED_IN" && session?.user) {
-        await fetchProfile(session.user.id);
+        try {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+
+          if (!mounted) return;
+
+          const profileData = profile as unknown as Profile | null;
+          setState({
+            user: session.user,
+            profile: profileData,
+            role: profileData?.role ?? null,
+            isLoading: false,
+            isAuthenticated: true,
+          });
+        } catch (error) {
+          console.error("Profile fetch error:", error);
+          if (mounted) {
+            setState({
+              user: session.user,
+              profile: null,
+              role: null,
+              isLoading: false,
+              isAuthenticated: true,
+            });
+          }
+        }
       } else if (event === "SIGNED_OUT") {
         setState({ user: null, profile: null, role: null, isLoading: false, isAuthenticated: false });
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [supabase, fetchProfile]);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
