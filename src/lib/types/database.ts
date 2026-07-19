@@ -1,6 +1,16 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-export type AppRole = 'owner' | 'manager' | 'reception' | 'accountant' | 'trainer';
+export type AppRole =
+  | 'super_admin'
+  | 'owner'
+  | 'branch_manager'
+  | 'finance_manager'
+  | 'hr_manager'
+  | 'academic_manager'
+  | 'trainer'
+  | 'reception'
+  | 'student'
+  | 'guardian';
 
 export interface Profile {
   id: string;
@@ -28,78 +38,36 @@ export interface Tenant {
   updated_at: string;
 }
 
-export interface Student {
+export interface Role {
   id: string;
-  tenant_id: string;
-  student_number: string;
-  first_name: string;
-  last_name: string;
-  email: string | null;
-  phone: string | null;
-  date_of_birth: string | null;
-  gender: string | null;
-  status: string;
-  guardian_name: string | null;
-  guardian_phone: string | null;
-  address: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-export interface Course {
-  id: string;
-  tenant_id: string;
+  tenant_id: string | null;
   name: string;
-  code: string;
+  slug: string;
   description: string | null;
-  status: string;
-  price: number;
-  duration_hours: number | null;
-  max_students: number | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
+  is_system: boolean;
+  level: number;
 }
 
-export interface Trainer {
+export interface Permission {
   id: string;
-  tenant_id: string;
+  name: string;
+  slug: string;
+  module: string;
+  action: string;
+  resource: string | null;
+}
+
+export interface LoginAudit {
+  id: string;
   user_id: string | null;
-  first_name: string;
-  last_name: string;
   email: string | null;
-  phone: string | null;
-  specialization: string | null;
-  status: string;
+  action: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  success: boolean;
+  failure_reason: string | null;
+  metadata: Json;
   created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-export interface Attendance {
-  id: string;
-  tenant_id: string;
-  student_id: string;
-  course_id: string;
-  date: string;
-  status: 'present' | 'absent' | 'late' | 'excused';
-  notes: string | null;
-  created_at: string;
-}
-
-export interface Invoice {
-  id: string;
-  tenant_id: string;
-  student_id: string;
-  invoice_number: string;
-  status: string;
-  total_amount: number;
-  paid_amount: number;
-  due_date: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Database {
@@ -115,36 +83,17 @@ export interface Database {
         Insert: Partial<Tenant> & { name: string; slug: string };
         Update: Partial<Tenant>;
       };
-      students: {
-        Row: Student;
-        Insert: Partial<Student> & { tenant_id: string; student_number: string; first_name: string; last_name: string };
-        Update: Partial<Student>;
-      };
-      courses: {
-        Row: Course;
-        Insert: Partial<Course> & { tenant_id: string; name: string; code: string };
-        Update: Partial<Course>;
-      };
-      trainers: {
-        Row: Trainer;
-        Insert: Partial<Trainer> & { tenant_id: string; first_name: string; last_name: string };
-        Update: Partial<Trainer>;
-      };
-      attendance: {
-        Row: Attendance;
-        Insert: Partial<Attendance> & { tenant_id: string; student_id: string; course_id: string; date: string; status: string };
-        Update: Partial<Attendance>;
-      };
-      invoices: {
-        Row: Invoice;
-        Insert: Partial<Invoice> & { tenant_id: string; student_id: string; invoice_number: string };
-        Update: Partial<Invoice>;
+      login_audit: {
+        Row: LoginAudit;
+        Insert: Partial<LoginAudit>;
+        Update: Partial<LoginAudit>;
       };
     };
     Functions: {
       get_user_tenant_id: { Args: Record<string, never>; Returns: string };
       has_role: { Args: { role_slug: string }; Returns: boolean };
-      is_admin: { Args: Record<string, never>; Returns: boolean };
+      is_super_admin: { Args: Record<string, never>; Returns: boolean };
+      is_tenant_admin: { Args: Record<string, never>; Returns: boolean };
     };
   };
 }

@@ -9,7 +9,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/lib/hooks/use-auth";
 import { GraduationCap, Loader2, Eye, EyeOff, ArrowRight } from "lucide-react";
 
 const schema = z.object({
@@ -22,7 +22,7 @@ type FormData = z.infer<typeof schema>;
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
+  const { signIn } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const redirect = searchParams.get("redirect") || "/dashboard";
@@ -33,7 +33,7 @@ function LoginForm() {
 
   const onSubmit = async (data: FormData) => {
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email: data.email, password: data.password });
+    const { error } = await signIn(data.email, data.password);
     if (error) {
       setError(error.message === "Invalid login credentials" ? "البريد الإلكتروني أو كلمة المرور غير صحيحة" : error.message);
     } else {

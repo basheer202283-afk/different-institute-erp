@@ -1,10 +1,32 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+type CookieSet = { name: string; value: string; options?: Record<string, unknown> };
+
+// Public routes that don't require authentication
 const publicPaths = ["/", "/login", "/register", "/forgot-password"];
 
 function isPublicPath(pathname: string): boolean {
   return publicPaths.some((p) => pathname === p);
+}
+
+// Route-role mappings for fine-grained access
+const routePermissions: Record<string, string[]> = {
+  "/admin": ["super_admin", "owner", "hr_manager"],
+  "/finance": ["super_admin", "owner", "finance_manager"],
+  "/settings": ["super_admin", "owner"],
+};
+
+function hasRouteAccess(pathname: string, role: string | null): boolean {
+  if (!role) return false;
+  if (role === "super_admin" || role === "owner") return true;
+
+  for (const [route, roles] of Object.entries(routePermissions)) {
+    if (pathname.startsWith(route)) {
+      return roles.includes(role);
+    }
+  }
+  return true; // Default: allow access if no specific restriction
 }
 
 export async function middleware(request: NextRequest) {
@@ -16,7 +38,7 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         getAll() { return request.cookies.getAll(); },
-        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+        setAll(cookiesToSet: CookieSet[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
@@ -30,10 +52,13 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const pathname = request.nextUrl.pathname;
 
+  // Security headers
   supabaseResponse.headers.set("X-Content-Type-Options", "nosniff");
   supabaseResponse.headers.set("X-Frame-Options", "DENY");
   supabaseResponse.headers.set("X-XSS-Protection", "1; mode=block");
+  supabaseResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
+  // Public paths - redirect authenticated users to dashboard
   if (isPublicPath(pathname)) {
     if (user && (pathname === "/login" || pathname === "/register")) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -41,10 +66,26 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
+  // Protected paths - redirect unauthenticated users to login
   if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // Check role-based access for restricted routes
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  const role = (profile as unknown as { role: string | null })?.role ?? null;
+
+  if (!hasRouteAccess(pathname, role)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 

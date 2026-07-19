@@ -1,0 +1,152 @@
+import type { AppRole } from "@/lib/types/database";
+
+// Permission slugs
+export const PERMISSIONS = {
+  // Dashboard
+  DASHBOARD_VIEW: "dashboard.view",
+
+  // Students
+  STUDENTS_VIEW: "students.view",
+  STUDENTS_CREATE: "students.create",
+  STUDENTS_EDIT: "students.edit",
+  STUDENTS_DELETE: "students.delete",
+  STUDENTS_EXPORT: "students.export",
+
+  // Trainers
+  TRAINERS_VIEW: "trainers.view",
+  TRAINERS_CREATE: "trainers.create",
+  TRAINERS_EDIT: "trainers.edit",
+  TRAINERS_DELETE: "trainers.delete",
+
+  // Courses
+  COURSES_VIEW: "courses.view",
+  COURSES_CREATE: "courses.create",
+  COURSES_EDIT: "courses.edit",
+  COURSES_DELETE: "courses.delete",
+
+  // Finance
+  FINANCE_VIEW: "finance.view",
+  FINANCE_INVOICES_CREATE: "finance.invoices.create",
+  FINANCE_PAYMENTS_MANAGE: "finance.payments.manage",
+  FINANCE_EXPENSES_MANAGE: "finance.expenses.manage",
+  FINANCE_SCHOLARSHIPS_MANAGE: "finance.scholarships.manage",
+  FINANCE_REPORTS_VIEW: "finance.reports.view",
+
+  // Attendance
+  ATTENDANCE_VIEW: "attendance.view",
+  ATTENDANCE_MARK: "attendance.mark",
+  ATTENDANCE_EDIT: "attendance.edit",
+
+  // Reports
+  REPORTS_VIEW: "reports.view",
+  REPORTS_GENERATE: "reports.generate",
+  REPORTS_EXPORT: "reports.export",
+
+  // Settings
+  SETTINGS_VIEW: "settings.view",
+  SETTINGS_MANAGE: "settings.manage",
+
+  // Users
+  USERS_VIEW: "users.view",
+  USERS_CREATE: "users.create",
+  USERS_EDIT: "users.edit",
+  USERS_DELETE: "users.delete",
+  USERS_ROLES_MANAGE: "users.roles.manage",
+
+  // Certificates
+  CERTIFICATES_VIEW: "certificates.view",
+  CERTIFICATES_ISSUE: "certificates.issue",
+
+  // Audit
+  AUDIT_VIEW: "audit.view",
+} as const;
+
+export type PermissionSlug = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
+
+// Role permission mappings
+const ROLE_PERMISSIONS: Record<AppRole, PermissionSlug[]> = {
+  super_admin: Object.values(PERMISSIONS),
+  owner: Object.values(PERMISSIONS),
+  branch_manager: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.STUDENTS_VIEW, PERMISSIONS.STUDENTS_CREATE, PERMISSIONS.STUDENTS_EDIT, PERMISSIONS.STUDENTS_DELETE, PERMISSIONS.STUDENTS_EXPORT,
+    PERMISSIONS.TRAINERS_VIEW, PERMISSIONS.TRAINERS_CREATE, PERMISSIONS.TRAINERS_EDIT, PERMISSIONS.TRAINERS_DELETE,
+    PERMISSIONS.COURSES_VIEW, PERMISSIONS.COURSES_CREATE, PERMISSIONS.COURSES_EDIT, PERMISSIONS.COURSES_DELETE,
+    PERMISSIONS.ATTENDANCE_VIEW, PERMISSIONS.ATTENDANCE_MARK, PERMISSIONS.ATTENDANCE_EDIT,
+    PERMISSIONS.REPORTS_VIEW, PERMISSIONS.REPORTS_GENERATE, PERMISSIONS.REPORTS_EXPORT,
+    PERMISSIONS.CERTIFICATES_VIEW, PERMISSIONS.CERTIFICATES_ISSUE,
+  ],
+  finance_manager: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.STUDENTS_VIEW,
+    PERMISSIONS.FINANCE_VIEW, PERMISSIONS.FINANCE_INVOICES_CREATE, PERMISSIONS.FINANCE_PAYMENTS_MANAGE,
+    PERMISSIONS.FINANCE_EXPENSES_MANAGE, PERMISSIONS.FINANCE_SCHOLARSHIPS_MANAGE, PERMISSIONS.FINANCE_REPORTS_VIEW,
+    PERMISSIONS.REPORTS_VIEW, PERMISSIONS.REPORTS_GENERATE, PERMISSIONS.REPORTS_EXPORT,
+  ],
+  hr_manager: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.STUDENTS_VIEW, PERMISSIONS.STUDENTS_CREATE, PERMISSIONS.STUDENTS_EDIT,
+    PERMISSIONS.TRAINERS_VIEW, PERMISSIONS.TRAINERS_CREATE, PERMISSIONS.TRAINERS_EDIT, PERMISSIONS.TRAINERS_DELETE,
+    PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_CREATE, PERMISSIONS.USERS_EDIT,
+  ],
+  academic_manager: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.STUDENTS_VIEW,
+    PERMISSIONS.COURSES_VIEW, PERMISSIONS.COURSES_CREATE, PERMISSIONS.COURSES_EDIT, PERMISSIONS.COURSES_DELETE,
+    PERMISSIONS.ATTENDANCE_VIEW, PERMISSIONS.ATTENDANCE_MARK, PERMISSIONS.ATTENDANCE_EDIT,
+    PERMISSIONS.CERTIFICATES_VIEW, PERMISSIONS.CERTIFICATES_ISSUE,
+    PERMISSIONS.REPORTS_VIEW, PERMISSIONS.REPORTS_GENERATE, PERMISSIONS.REPORTS_EXPORT,
+  ],
+  trainer: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.STUDENTS_VIEW,
+    PERMISSIONS.COURSES_VIEW,
+    PERMISSIONS.ATTENDANCE_VIEW, PERMISSIONS.ATTENDANCE_MARK,
+  ],
+  reception: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.STUDENTS_VIEW, PERMISSIONS.STUDENTS_CREATE, PERMISSIONS.STUDENTS_EDIT,
+    PERMISSIONS.ATTENDANCE_VIEW, PERMISSIONS.ATTENDANCE_MARK,
+  ],
+  student: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.STUDENTS_VIEW,
+    PERMISSIONS.COURSES_VIEW,
+    PERMISSIONS.ATTENDANCE_VIEW,
+    PERMISSIONS.CERTIFICATES_VIEW,
+  ],
+  guardian: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.STUDENTS_VIEW,
+    PERMISSIONS.ATTENDANCE_VIEW,
+  ],
+};
+
+export function hasPermission(role: AppRole | null, permission: PermissionSlug): boolean {
+  if (!role) return false;
+  if (role === "super_admin" || role === "owner") return true;
+  return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
+}
+
+export function hasAnyPermission(role: AppRole | null, permissions: PermissionSlug[]): boolean {
+  if (!role) return false;
+  if (role === "super_admin" || role === "owner") return true;
+  return permissions.some((p) => ROLE_PERMISSIONS[role]?.includes(p));
+}
+
+export function getRolePermissions(role: AppRole): PermissionSlug[] {
+  return ROLE_PERMISSIONS[role] ?? [];
+}
+
+export const ROLE_LABELS: Record<AppRole, { en: string; ar: string }> = {
+  super_admin: { en: "Super Admin", ar: "المدير العام" },
+  owner: { en: "Institute Owner", ar: "مالك المعهد" },
+  branch_manager: { en: "Branch Manager", ar: "مدير الفرع" },
+  finance_manager: { en: "Finance Manager", ar: "مدير المالية" },
+  hr_manager: { en: "HR Manager", ar: "مدير الموارد البشرية" },
+  academic_manager: { en: "Academic Manager", ar: "مدير الأكاديمي" },
+  trainer: { en: "Trainer", ar: "المدرب" },
+  reception: { en: "Reception", ar: "الاستقبال" },
+  student: { en: "Student", ar: "الطالب" },
+  guardian: { en: "Guardian", ar: "ولي الأمر" },
+};

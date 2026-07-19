@@ -3,12 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn, ROLE_LABELS } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { PERMISSIONS, ROLE_LABELS, type PermissionSlug } from "@/lib/permissions";
 import type { AppRole } from "@/lib/types/database";
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen, CreditCard,
   CalendarCheck, Settings, Shield, Menu, X, LogOut, Bell, BarChart3,
-  Award, Building2, FileText
+  Award, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -17,47 +18,47 @@ interface NavItem {
   titleEn: string;
   href: string;
   icon: React.ElementType;
-  roles?: AppRole[];
+  permission?: PermissionSlug;
 }
 
 const mainNav: NavItem[] = [
-  { title: "لوحة التحكم", titleEn: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "الطالبات", titleEn: "Students", href: "/student", icon: Users },
-  { title: "المدربات", titleEn: "Trainers", href: "/trainer", icon: GraduationCap },
-  { title: "الدورات", titleEn: "Courses", href: "/institute", icon: BookOpen },
-  { title: "الحضور", titleEn: "Attendance", href: "/attendance", icon: CalendarCheck },
-  { title: "المالية", titleEn: "Finance", href: "/finance", icon: CreditCard, roles: ["owner", "manager", "accountant"] },
-  { title: "الشهادات", titleEn: "Certificates", href: "/certificates", icon: Award },
-  { title: "التقارير", titleEn: "Reports", href: "/reports", icon: BarChart3, roles: ["owner", "manager"] },
-  { title: "المستندات", titleEn: "Documents", href: "/shared", icon: FileText },
-  { title: "الإشعارات", titleEn: "Notifications", href: "/notifications", icon: Bell },
+  { title: "لوحة التحكم", titleEn: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: PERMISSIONS.DASHBOARD_VIEW },
+  { title: "الطالبات", titleEn: "Students", href: "/students", icon: Users, permission: PERMISSIONS.STUDENTS_VIEW },
+  { title: "المدربات", titleEn: "Trainers", href: "/trainers", icon: GraduationCap, permission: PERMISSIONS.TRAINERS_VIEW },
+  { title: "الدورات", titleEn: "Courses", href: "/courses", icon: BookOpen, permission: PERMISSIONS.COURSES_VIEW },
+  { title: "الحضور", titleEn: "Attendance", href: "/attendance", icon: CalendarCheck, permission: PERMISSIONS.ATTENDANCE_VIEW },
+  { title: "المالية", titleEn: "Finance", href: "/finance", icon: CreditCard, permission: PERMISSIONS.FINANCE_VIEW },
+  { title: "الشهادات", titleEn: "Certificates", href: "/certificates", icon: Award, permission: PERMISSIONS.CERTIFICATES_VIEW },
+  { title: "التقارير", titleEn: "Reports", href: "/reports", icon: BarChart3, permission: PERMISSIONS.REPORTS_VIEW },
 ];
 
 const adminNav: NavItem[] = [
-  { title: "المعهد", titleEn: "Institute", href: "/institute", icon: Building2, roles: ["owner", "manager"] },
-  { title: "المستخدمين", titleEn: "Users", href: "/admin", icon: Shield, roles: ["owner", "manager"] },
-  { title: "الإعدادات", titleEn: "Settings", href: "/settings", icon: Settings, roles: ["owner", "manager"] },
+  { title: "المستخدمين", titleEn: "Users", href: "/admin", icon: Shield, permission: PERMISSIONS.USERS_VIEW },
+  { title: "الإعدادات", titleEn: "Settings", href: "/settings", icon: Settings, permission: PERMISSIONS.SETTINGS_VIEW },
 ];
 
 interface SidebarProps {
   userRole: AppRole | null;
   userName?: string;
+  can: (permission: PermissionSlug) => boolean;
   onSignOut?: () => void;
 }
 
-export function Sidebar({ userRole, userName, onSignOut }: SidebarProps) {
+export function Sidebar({ userRole, userName, can, onSignOut }: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(true);
 
-  const canAccess = (item: NavItem) => {
-    if (!item.roles) return true;
-    if (!userRole) return false;
-    if (userRole === "owner") return true;
-    return item.roles.includes(userRole);
-  };
+  const filteredMainNav = mainNav.filter((item) => {
+    if (!item.permission) return true;
+    return can(item.permission);
+  });
 
-  const filteredMainNav = mainNav.filter(canAccess);
-  const filteredAdminNav = adminNav.filter(canAccess);
+  const filteredAdminNav = adminNav.filter((item) => {
+    if (!item.permission) return true;
+    return can(item.permission);
+  });
+
+  const roleLabel = userRole ? ROLE_LABELS[userRole] : null;
 
   return (
     <>
@@ -137,7 +138,7 @@ export function Sidebar({ userRole, userName, onSignOut }: SidebarProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{userName || "مستخدم"}</p>
-              <p className="text-[10px] text-muted-foreground">{userRole ? ROLE_LABELS[userRole] : ""}</p>
+              <p className="text-[10px] text-muted-foreground">{roleLabel?.ar || ""}</p>
             </div>
           </div>
           {onSignOut && (

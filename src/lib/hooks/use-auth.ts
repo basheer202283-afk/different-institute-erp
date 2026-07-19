@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import type { Profile, AppRole } from "@/lib/types/database";
+import { hasPermission, hasAnyPermission, type PermissionSlug } from "@/lib/permissions";
 
 interface AuthState {
   user: User | null;
@@ -23,6 +24,23 @@ export function useAuth() {
     isAuthenticated: false,
   });
 
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    const profileData = profile as unknown as Profile | null;
+    setState({
+      user: null,
+      profile: profileData,
+      role: profileData?.role ?? null,
+      isLoading: false,
+      isAuthenticated: true,
+    });
+  }, [supabase]);
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -32,7 +50,7 @@ export function useAuth() {
           .select("*")
           .eq("id", session.user.id)
           .single();
-        
+
         const profileData = profile as unknown as Profile | null;
         setState({
           user: session.user,
@@ -50,26 +68,14 @@ export function useAuth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
-        const profileData = profile as unknown as Profile | null;
-        setState({
-          user: session.user,
-          profile: profileData,
-          role: profileData?.role ?? null,
-          isLoading: false,
-          isAuthenticated: true,
-        });
+        await fetchProfile(session.user.id);
       } else if (event === "SIGNED_OUT") {
         setState({ user: null, profile: null, role: null, isLoading: false, isAuthenticated: false });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, [supabase, fetchProfile]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -92,17 +98,26 @@ export function useAuth() {
 
   const resetPassword = useCallback(async (email: string) => {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     return { data, error };
   }, [supabase]);
 
-  const hasRole = useCallback((roles: AppRole | AppRole[]) => {
-    if (!state.role) return false;
-    if (state.role === "owner") return true;
-    const roleArray = Array.isArray(roles) ? roles : [roles];
-    return roleArray.includes(state.role);
+  const can = useCallback((permission: PermissionSlug) => {
+    return hasPermission(state.role, permission);
   }, [state.role]);
 
-  return { ...state, signIn, signUp, signOut, resetPassword, hasRole };
+  const canAny = useCallback((permissions: PermissionSlug[]) => {
+    return hasAnyPermission(state.role, permissions);
+  }, [state.role]);
+
+  return {
+    ...state,
+    signIn,
+    signUp,
+    signOut,
+    resetPassword,
+    can,
+    canAny,
+  };
 }
