@@ -1,98 +1,86 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useAuthStore } from "@/lib/stores/auth-store";
-import type { Profile } from "@/lib/types/database";
+import type { User } from "@supabase/supabase-js";
+import type { Profile, UserRole } from "@/lib/types/database";
+
+interface AuthState {
+  user: User | null;
+  profile: Profile | null;
+  roles: UserRole[];
+  isLoading: boolean;
+  isAuthenticated: boolean;
+}
 
 export function useAuth() {
   const supabase = createClient();
-  const store = useAuthStore();
-  const [initialized, setInitialized] = useState(false);
+  const [state, setState] = useState<AuthState>({
+    user: null,
+    profile: null,
+    roles: [],
+    isLoading: true,
+    isAuthenticated: false,
+  });
 
-  const fetchUserData = useCallback(async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string) => {
     const { data: profile } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
 
-    if (!profile) {
-      store.clearAuth();
-      return;
+    if (profile) {
+      const profileData = profile as unknown as Profile;
+      setState({
+        user: null, // Will be set by caller
+        profile: profileData,
+        roles: [profileData.role || "trainer"],
+        isLoading: false,
+        isAuthenticated: true,
+      });
     }
-
-    const { data: userRoles } = await supabase
-      .from("user_roles")
-      .select("role_id, roles!inner(slug)")
-      .eq("user_id", userId)
-      .eq("is_active", true);
-
-    const roles = ((userRoles ?? []) as unknown as Array<{ roles: { slug: string } }>).map((ur) => ur.roles.slug) ?? [];
-
-    const { data: rolePerms } = await supabase
-      .from("user_roles")
-      .select("role_id")
-      .eq("user_id", userId)
-      .eq("is_active", true);
-
-    const roleIds = ((rolePerms ?? []) as Array<{ role_id: string }>).map((r) => r.role_id) ?? [];
-
-    let permissions: string[] = [];
-    if (roleIds.length > 0) {
-      const { data: perms } = await supabase
-        .from("role_permissions")
-        .select("permissions!inner(slug), effect")
-        .in("role_id", roleIds);
-
-      permissions = ((perms ?? []) as unknown as Array<{ permissions: { slug: string } }>).map((p) => p.permissions.slug) ?? [];
-    }
-
-    store.setAuth(
-      (await supabase.auth.getUser()).data.user!,
-      profile as Profile,
-      roles,
-      [...new Set(permissions)]
-    );
-  }, [supabase, store]);
+  }, [supabase]);
 
   useEffect(() => {
-    if (initialized) return;
-
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        await fetchUserData(session.user.id);
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+
+        const profileData = profile as unknown as Profile | null;
+        setState({
+          user: session.user,
+          profile: profileData,
+          roles: profileData ? [profileData.role] : [],
+          isLoading: false,
+          isAuthenticated: true,
+        });
       } else {
-        store.clearAuth();
+        setState({ user: null, profile: null, roles: [], isLoading: false, isAuthenticated: false });
       }
-      setInitialized(true);
     };
 
     init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        await fetchUserData(session.user.id);
+        await fetchProfile(session.user.id);
       } else if (event === "SIGNED_OUT") {
-        store.clearAuth();
-      } else if (event === "TOKEN_REFRESHED" && session?.user) {
-        await fetchUserData(session.user.id);
+        setState({ user: null, profile: null, roles: [], isLoading: false, isAuthenticated: false });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase, store, initialized, fetchUserData]);
+  }, [supabase, fetchProfile]);
 
-  const signIn = useCallback(async (email: string, password: string, rememberMe = false) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error };
-    if (rememberMe) {
-      localStorage.setItem("erp_remember_email", email);
-    } else {
-      localStorage.removeItem("erp_remember_email");
-    }
-    return { data, error: null };
+    return { data, error };
   }, [supabase]);
 
   const signUp = useCallback(async (email: string, password: string, metadata?: Record<string, string>) => {
@@ -106,9 +94,9 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
-    store.clearAuth();
+    setState({ user: null, profile: null, roles: [], isLoading: false, isAuthenticated: false });
     return { error };
-  }, [supabase, store]);
+  }, [supabase]);
 
   const resetPassword = useCallback(async (email: string) => {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -117,42 +105,22 @@ export function useAuth() {
     return { data, error };
   }, [supabase]);
 
-  const updatePassword = useCallback(async (password: string) => {
-    const { data, error } = await supabase.auth.updateUser({ password });
-    return { data, error };
-  }, [supabase]);
+  const hasRole = useCallback((role: UserRole) => {
+    return state.roles.includes(role) || state.roles.includes("owner");
+  }, [state.roles]);
 
-  const hasRole = useCallback((role: string) => {
-    return store.roles.includes(role) || store.roles.includes("super_admin");
-  }, [store.roles]);
-
-  const hasPermission = useCallback((permission: string) => {
-    if (store.roles.includes("super_admin")) return true;
-    return store.permissions.includes(permission);
-  }, [store.roles, store.permissions]);
-
-  const hasAnyRole = useCallback((roles: string[]) => {
-    if (store.roles.includes("super_admin")) return true;
-    return roles.some((r) => store.roles.includes(r));
-  }, [store.roles]);
-
-  const hasAnyPermission = useCallback((permissions: string[]) => {
-    if (store.roles.includes("super_admin")) return true;
-    return permissions.some((p) => store.permissions.includes(p));
-  }, [store.roles, store.permissions]);
+  const hasAnyRole = useCallback((roles: UserRole[]) => {
+    if (state.roles.includes("owner")) return true;
+    return roles.some((r) => state.roles.includes(r));
+  }, [state.roles]);
 
   return {
-    ...store,
-    isReady: initialized,
+    ...state,
     signIn,
     signUp,
     signOut,
     resetPassword,
-    updatePassword,
     hasRole,
-    hasPermission,
     hasAnyRole,
-    hasAnyPermission,
-    refreshUser: () => store.user ? fetchUserData(store.user.id) : Promise.resolve(),
   };
 }

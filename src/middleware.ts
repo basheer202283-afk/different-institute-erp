@@ -3,7 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 
 type CookieSet = { name: string; value: string; options?: Record<string, unknown> };
 
-const publicPaths = ["/", "/auth/login", "/auth/register", "/auth/forgot-password", "/auth/reset-password", "/auth/unauthorized", "/auth/forbidden", "/api/health"];
+const publicPaths = [
+  "/",
+  "/auth/login",
+  "/auth/register",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+];
 
 function isPublicPath(pathname: string): boolean {
   return publicPaths.some((p) => pathname === p || pathname.startsWith(p + "/"));
@@ -21,7 +27,9 @@ export async function middleware(request: NextRequest) {
         setAll(cookiesToSet: CookieSet[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options as Record<string, unknown>));
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options as Record<string, unknown>)
+          );
         },
       },
     }
@@ -31,14 +39,12 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Security headers
-  const response = NextResponse.next({ request });
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-XSS-Protection", "1; mode=block");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
-  response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  supabaseResponse.headers.set("X-Content-Type-Options", "nosniff");
+  supabaseResponse.headers.set("X-Frame-Options", "DENY");
+  supabaseResponse.headers.set("X-XSS-Protection", "1; mode=block");
+  supabaseResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
+  // Public paths - redirect authenticated users to dashboard
   if (isPublicPath(pathname)) {
     if (user && (pathname === "/auth/login" || pathname === "/auth/register")) {
       const url = request.nextUrl.clone();
@@ -48,6 +54,7 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
+  // Protected paths - redirect unauthenticated users to login
   if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";

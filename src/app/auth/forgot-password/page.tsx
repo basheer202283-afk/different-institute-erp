@@ -7,16 +7,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuthContext } from "@/components/providers/auth-provider";
-import { GraduationCap, Loader2, ArrowLeft, CheckCircle2, Mail } from "lucide-react";
-import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/client";
+import { GraduationCap, Loader2, ArrowRight, CheckCircle2, Mail } from "lucide-react";
 
-const schema = z.object({ email: z.string().email("Please enter a valid email") });
+const schema = z.object({ email: z.string().email("البريد الإلكتروني غير صالح") });
 type FormData = z.infer<typeof schema>;
 
 export default function ForgotPasswordPage() {
-  const { resetPassword } = useAuthContext();
+  const supabase = createClient();
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,58 +25,59 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: FormData) => {
     setError(null);
-    const { error } = await resetPassword(data.email);
+    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
     if (error) setError(error.message);
     else setSent(true);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-        <Link href="/auth/login" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-          <ArrowLeft className="h-4 w-4" /> Back to login
+      <div className="w-full max-w-md space-y-6">
+        <Link href="/auth/login" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowRight className="h-4 w-4" /> العودة لتسجيل الدخول
         </Link>
 
-        <Card className="border-0 shadow-xl bg-card/80 backdrop-blur">
-          <CardHeader className="text-center space-y-4">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+        <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
               <GraduationCap className="h-10 w-10 text-primary" />
             </div>
-            <div>
-              <CardTitle className="text-2xl">Reset Password</CardTitle>
-              <CardDescription>Enter your email and we&apos;ll send you a reset link</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <h1 className="text-2xl font-bold">استعادة كلمة المرور</h1>
+          <p className="text-muted-foreground mt-1">أدخل بريدك الإلكتروني وسنرسل لك رابط الاستعادة</p>
+        </div>
+
+        <Card className="border-0 shadow-xl bg-card/80 backdrop-blur">
+          <CardContent className="p-6">
             {sent ? (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-4">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                  <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <div className="text-center space-y-4">
+                <div className="mx-auto h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <CheckCircle2 className="h-8 w-8 text-green-600" />
                 </div>
-                <div>
-                  <h3 className="font-semibold">Check your email</h3>
-                  <p className="text-sm text-muted-foreground mt-1">We&apos;ve sent a password reset link to your email address.</p>
-                </div>
+                <h3 className="font-semibold">تحقق من بريدك الإلكتروني</h3>
+                <p className="text-sm text-muted-foreground">لقد أرسلنا رابط استعادة كلمة المرور</p>
                 <Button variant="outline" className="w-full" asChild>
-                  <Link href="/auth/login"><Mail className="mr-2 h-4 w-4" /> Back to Login</Link>
+                  <Link href="/auth/login"><Mail className="ml-2 h-4 w-4" /> العودة لتسجيل الدخول</Link>
                 </Button>
-              </motion.div>
+              </div>
             ) : (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {error && <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>}
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium">Email</label>
-                  <Input id="email" type="email" placeholder="name@example.com" {...register("email")} className={errors.email ? "border-destructive" : ""} />
+                  <label className="text-sm font-medium">البريد الإلكتروني</label>
+                  <Input type="email" {...register("email")} placeholder="name@example.com" className={errors.email ? "border-destructive" : ""} />
                   {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : "Send Reset Link"}
+                  {isSubmitting ? <><Loader2 className="ml-2 h-4 w-4 animate-spin" /> جاري الإرسال...</> : "إرسال رابط الاستعادة"}
                 </Button>
               </form>
             )}
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 }
