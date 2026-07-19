@@ -3,14 +3,12 @@ import { NextResponse, type NextRequest } from "next/server";
 
 type CookieSet = { name: string; value: string; options?: Record<string, unknown> };
 
-// Public routes that don't require authentication
 const publicPaths = ["/", "/login", "/register", "/forgot-password"];
 
 function isPublicPath(pathname: string): boolean {
   return publicPaths.some((p) => pathname === p);
 }
 
-// Route-role mappings for fine-grained access
 const routePermissions: Record<string, string[]> = {
   "/admin": ["super_admin", "owner", "hr_manager"],
   "/finance": ["super_admin", "owner", "finance_manager"],
@@ -20,13 +18,10 @@ const routePermissions: Record<string, string[]> = {
 function hasRouteAccess(pathname: string, role: string | null): boolean {
   if (!role) return false;
   if (role === "super_admin" || role === "owner") return true;
-
   for (const [route, roles] of Object.entries(routePermissions)) {
-    if (pathname.startsWith(route)) {
-      return roles.includes(role);
-    }
+    if (pathname.startsWith(route)) return roles.includes(role);
   }
-  return true; // Default: allow access if no specific restriction
+  return true;
 }
 
 export async function middleware(request: NextRequest) {
@@ -58,7 +53,7 @@ export async function middleware(request: NextRequest) {
   supabaseResponse.headers.set("X-XSS-Protection", "1; mode=block");
   supabaseResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
-  // Public paths - redirect authenticated users to dashboard
+  // Public paths
   if (isPublicPath(pathname)) {
     if (user && (pathname === "/login" || pathname === "/register")) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -66,7 +61,7 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // Protected paths - redirect unauthenticated users to login
+  // Protected paths - require auth
   if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -74,19 +69,26 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Check role-based access for restricted routes
+  // Get user profile for role and organization context
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id, branch_id")
     .eq("id", user.id)
     .single();
 
-  const role = (profile as unknown as { role: string | null })?.role ?? null;
+  const profileData = profile as unknown as { role: string; organization_id: string | null; branch_id: string | null } | null;
+  const role = profileData?.role ?? null;
 
+  // Check role-based access
   if (!hasRouteAccess(pathname, role)) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
+  }
+
+  // Dashboard requires organization context
+  if (pathname.startsWith("/dashboard") && !profileData?.organization_id) {
+    // Allow access but dashboard will show setup prompt
   }
 
   return supabaseResponse;

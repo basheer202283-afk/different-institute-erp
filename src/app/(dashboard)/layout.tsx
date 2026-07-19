@@ -1,25 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/hooks/use-auth";
-import type { Profile } from "@/lib/types/database";
+import { useTenant } from "@/lib/hooks/use-tenant";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, profile, role, isLoading, isAuthenticated, signOut, can } = useAuth();
+  const { profile, role, isLoading: authLoading, isAuthenticated, signOut, can } = useAuth();
+  const { organization, branch, isLoading: tenantLoading } = useTenant();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
 
-  if (isLoading) {
+  if (authLoading || tenantLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

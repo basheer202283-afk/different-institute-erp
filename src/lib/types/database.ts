@@ -12,9 +12,70 @@ export type AppRole =
   | 'student'
   | 'guardian';
 
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  legal_name: string | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  logo_url: string | null;
+  brand_color: string;
+  secondary_color: string;
+  tagline: string | null;
+  address: string | null;
+  city: string | null;
+  country: string;
+  timezone: string;
+  locale: string;
+  currency: string;
+  date_format: string;
+  status: string;
+  subscription_plan: string;
+  max_branches: number;
+  max_users: number;
+  max_students: number;
+  settings: Json;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface Branch {
+  id: string;
+  organization_id: string;
+  name: string;
+  code: string;
+  branch_code: string | null;
+  description: string | null;
+  address_line1: string | null;
+  address_line2: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  country: string;
+  phone: string | null;
+  email: string | null;
+  manager_id: string | null;
+  opening_date: string | null;
+  capacity: number | null;
+  timezone: string;
+  locale: string;
+  is_active: boolean;
+  settings: Json;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
 export interface Profile {
   id: string;
   tenant_id: string | null;
+  organization_id: string | null;
+  branch_id: string | null;
   first_name: string | null;
   last_name: string | null;
   display_name: string | null;
@@ -30,6 +91,7 @@ export interface Profile {
 
 export interface Tenant {
   id: string;
+  organization_id: string;
   name: string;
   slug: string;
   status: string;
@@ -57,6 +119,41 @@ export interface Permission {
   resource: string | null;
 }
 
+export interface OrganizationMember {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  role: string;
+  is_active: boolean;
+  joined_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BranchMember {
+  id: string;
+  branch_id: string;
+  user_id: string;
+  role: string;
+  is_active: boolean;
+  joined_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContextAuditLog {
+  id: string;
+  user_id: string | null;
+  action: string;
+  old_organization_id: string | null;
+  new_organization_id: string | null;
+  old_branch_id: string | null;
+  new_branch_id: string | null;
+  ip_address: string | null;
+  metadata: Json;
+  created_at: string;
+}
+
 export interface LoginAudit {
   id: string;
   user_id: string | null;
@@ -73,6 +170,16 @@ export interface LoginAudit {
 export interface Database {
   public: {
     Tables: {
+      organizations: {
+        Row: Organization;
+        Insert: Partial<Organization> & { name: string; slug: string };
+        Update: Partial<Organization>;
+      };
+      branches: {
+        Row: Branch;
+        Insert: Partial<Branch> & { organization_id: string; name: string; code: string };
+        Update: Partial<Branch>;
+      };
       profiles: {
         Row: Profile;
         Insert: Partial<Profile> & { id: string };
@@ -80,8 +187,23 @@ export interface Database {
       };
       tenants: {
         Row: Tenant;
-        Insert: Partial<Tenant> & { name: string; slug: string };
+        Insert: Partial<Tenant> & { organization_id: string; name: string; slug: string };
         Update: Partial<Tenant>;
+      };
+      organization_members: {
+        Row: OrganizationMember;
+        Insert: Partial<OrganizationMember> & { organization_id: string; user_id: string };
+        Update: Partial<OrganizationMember>;
+      };
+      branch_members: {
+        Row: BranchMember;
+        Insert: Partial<BranchMember> & { branch_id: string; user_id: string };
+        Update: Partial<BranchMember>;
+      };
+      context_audit_log: {
+        Row: ContextAuditLog;
+        Insert: Partial<ContextAuditLog>;
+        Update: never;
       };
       login_audit: {
         Row: LoginAudit;
@@ -91,9 +213,13 @@ export interface Database {
     };
     Functions: {
       get_user_tenant_id: { Args: Record<string, never>; Returns: string };
+      get_user_organization_id: { Args: Record<string, never>; Returns: string };
+      get_user_branch_id: { Args: Record<string, never>; Returns: string };
       has_role: { Args: { role_slug: string }; Returns: boolean };
       is_super_admin: { Args: Record<string, never>; Returns: boolean };
       is_tenant_admin: { Args: Record<string, never>; Returns: boolean };
+      user_belongs_to_organization: { Args: { org_id: string }; Returns: boolean };
+      user_belongs_to_branch: { Args: { br_id: string }; Returns: boolean };
     };
   };
 }

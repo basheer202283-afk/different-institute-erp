@@ -1,7 +1,9 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, GraduationCap, BookOpen, CreditCard, CalendarCheck, BarChart3 } from "lucide-react";
+import { useTenant } from "@/lib/hooks/use-tenant";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { Users, GraduationCap, BookOpen, CreditCard, CalendarCheck, BarChart3, Building2, MapPin } from "lucide-react";
 
 const stats = [
   { title: "الطالبات", titleEn: "Students", value: "—", icon: Users, color: "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400" },
@@ -13,12 +15,49 @@ const stats = [
 ];
 
 export default function DashboardPage() {
+  const { organization, branch } = useTenant();
+  const { profile } = useAuth();
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">لوحة التحكم</h1>
         <p className="text-muted-foreground">مرحباً بك في نظام إدارة معهد المختلفة</p>
       </div>
+
+      {/* Organization & Branch Info */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {organization && (
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: organization.brand_color || "#3B82F6" }}>
+                <Building2 className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">المنظمة</p>
+                <p className="font-semibold">{organization.name}</p>
+                <p className="text-xs text-muted-foreground">{organization.city || organization.country}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        {branch && (
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center">
+                <MapPin className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">الفرع</p>
+                <p className="font-semibold">{branch.name}</p>
+                <p className="text-xs text-muted-foreground">{branch.code}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (
           <Card key={s.titleEn} className="hover:shadow-md transition-shadow">
@@ -35,6 +74,7 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle>آخر النشاطات</CardTitle></CardHeader>
