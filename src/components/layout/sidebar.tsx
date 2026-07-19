@@ -9,7 +9,7 @@ import type { AppRole } from "@/lib/types/database";
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen, CreditCard,
   CalendarCheck, Settings, Shield, Menu, X, LogOut, Bell, BarChart3,
-  Award, FileText
+  Award, FileText, ClipboardList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,6 +24,7 @@ interface NavItem {
 const mainNav: NavItem[] = [
   { title: "لوحة التحكم", titleEn: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: PERMISSIONS.DASHBOARD_VIEW },
   { title: "الطالبات", titleEn: "Students", href: "/students", icon: Users, permission: PERMISSIONS.STUDENTS_VIEW },
+  { title: "التسجيلات", titleEn: "Enrollment", href: "/enrollment", icon: ClipboardList, permission: PERMISSIONS.ENROLLMENT_VIEW },
   { title: "المدربات", titleEn: "Trainers", href: "/trainers", icon: GraduationCap, permission: PERMISSIONS.TRAINERS_VIEW },
   { title: "الدورات", titleEn: "Courses", href: "/courses", icon: BookOpen, permission: PERMISSIONS.COURSES_VIEW },
   { title: "الحضور", titleEn: "Attendance", href: "/attendance", icon: CalendarCheck, permission: PERMISSIONS.ATTENDANCE_VIEW },

@@ -340,6 +340,21 @@ export interface Database {
         Insert: Partial<AttendanceRecord> & { tenant_id: string; student_id: string; class_id: string; attendance_date: string; status: string };
         Update: Partial<AttendanceRecord>;
       };
+      student_enrollments: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      enrollment_waiting_list: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      enrollment_history: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
     };
     Functions: {
       get_user_tenant_id: { Args: Record<string, never>; Returns: string };
