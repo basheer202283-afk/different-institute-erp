@@ -9,7 +9,7 @@ import type { AppRole } from "@/lib/types/database";
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen, CreditCard,
   CalendarCheck, Settings, Shield, Menu, X, LogOut, Bell, BarChart3,
-  Award, FileText, ClipboardList, MessageSquare
+  Award, FileText, ClipboardList, MessageSquare, Briefcase
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -34,6 +34,7 @@ const mainNav: NavItem[] = [
 ];
 
 const adminNav: NavItem[] = [
+  { title: "الموظفين", titleEn: "Employees", href: "/employees", icon: Briefcase, permission: PERMISSIONS.EMPLOYEES_VIEW },
   { title: "الإشعارات", titleEn: "Notifications", href: "/notifications", icon: MessageSquare, permission: PERMISSIONS.NOTIFICATIONS_VIEW },
   { title: "المستخدمين", titleEn: "Users", href: "/admin", icon: Shield, permission: PERMISSIONS.USERS_VIEW },
   { title: "الإعدادات", titleEn: "Settings", href: "/settings", icon: Settings, permission: PERMISSIONS.SETTINGS_VIEW },

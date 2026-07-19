@@ -80,6 +80,13 @@ export const PERMISSIONS = {
   NOTIFICATIONS_MANAGE: "notifications.manage",
   NOTIFICATIONS_TEMPLATES: "notifications.templates",
 
+  // Employees / HR
+  EMPLOYEES_VIEW: "employees.view",
+  EMPLOYEES_CREATE: "employees.create",
+  EMPLOYEES_EDIT: "employees.edit",
+  EMPLOYEES_DELETE: "employees.delete",
+  EMPLOYEES_LEAVE_MANAGE: "employees.leave.manage",
+
   // Audit
   AUDIT_VIEW: "audit.view",
 } as const;

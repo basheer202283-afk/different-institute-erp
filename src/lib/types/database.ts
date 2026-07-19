@@ -380,6 +380,21 @@ export interface Database {
         Insert: Record<string, unknown>;
         Update: Record<string, unknown>;
       };
+      employees: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      positions: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      leave_requests: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
     };
     Functions: {
       get_user_tenant_id: { Args: Record<string, never>; Returns: string };
