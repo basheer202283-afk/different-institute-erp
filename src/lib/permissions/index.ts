@@ -87,6 +87,14 @@ export const PERMISSIONS = {
   EMPLOYEES_DELETE: "employees.delete",
   EMPLOYEES_LEAVE_MANAGE: "employees.leave.manage",
 
+  // Exams
+  EXAMS_VIEW: "exams.view",
+  EXAMS_CREATE: "exams.create",
+  EXAMS_EDIT: "exams.edit",
+  EXAMS_DELETE: "exams.delete",
+  EXAMS_GRADE: "exams.grade",
+  EXAMS_MANAGE_QUESTIONS: "exams.manage_questions",
+
   // Audit
   AUDIT_VIEW: "audit.view",
 } as const;

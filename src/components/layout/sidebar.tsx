@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Users, GraduationCap, BookOpen, CreditCard,
   CalendarCheck, Settings, Shield, X, LogOut, BarChart3,
   Award, ClipboardList, MessageSquare, Briefcase,
-  UserCircle, Heart
+  UserCircle, Heart, FileCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -31,6 +31,7 @@ const mainNav: NavItem[] = [
   { title: "الحضور", titleEn: "Attendance", href: "/attendance", icon: CalendarCheck, permission: PERMISSIONS.ATTENDANCE_VIEW },
   { title: "المالية", titleEn: "Finance", href: "/finance", icon: CreditCard, permission: PERMISSIONS.FINANCE_VIEW },
   { title: "الشهادات", titleEn: "Certificates", href: "/certificates", icon: Award, permission: PERMISSIONS.CERTIFICATES_VIEW },
+  { title: "الاختبارات", titleEn: "Exams", href: "/exams", icon: FileCheck, permission: PERMISSIONS.EXAMS_VIEW },
   { title: "التقارير", titleEn: "Reports", href: "/reports", icon: BarChart3, permission: PERMISSIONS.REPORTS_VIEW },
 ];
 
