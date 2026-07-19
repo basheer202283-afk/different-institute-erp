@@ -20,22 +20,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // For public paths, just pass through - no auth check needed
+  // Public paths pass through
   if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
 
-  // For protected paths, check for auth cookie
-  // Supabase stores session in cookies - check for the auth token
-  const hasSession = request.cookies.has("sb-auth-token") || 
+  // Check for auth cookie
+  const hasSession = request.cookies.has("sb-auth-token") ||
                      request.cookies.has("sb-refresh-token") ||
                      Array.from(request.cookies.getAll()).some(c => c.name.startsWith("sb-"));
 
-  // If no auth cookies, redirect to login
-  if (!hasSession) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+  // If no auth cookies, redirect to login (only for API routes)
+  // For page routes, let the client AdminShell handle it so the UI renders
+  if (!hasSession && pathname.startsWith("/api")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Add security headers

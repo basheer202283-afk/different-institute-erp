@@ -1,15 +1,13 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { useState, type ReactNode } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useTenant } from "@/lib/hooks/use-tenant";
-import { Loader2 } from "lucide-react";
 
-// Paths that render without the admin chrome (sidebar + header).
-// Everything else is considered an authenticated admin page.
+// Public paths that render without the admin chrome (sidebar + header).
 const PUBLIC_PREFIXES = [
   "/login",
   "/register",
@@ -24,46 +22,25 @@ function isPublicPath(pathname: string): boolean {
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const {
     profile,
     role,
-    isLoading: authLoading,
     isAuthenticated,
     signOut,
     can,
   } = useAuth();
-  const { isLoading: tenantLoading } = useTenant();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const showChrome = !isPublicPath(pathname);
-
-  // Redirect unauthenticated users away from protected pages
-  useEffect(() => {
-    if (showChrome && !authLoading && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [showChrome, authLoading, isAuthenticated, router]);
 
   // Public pages: render as-is, no wrapper
   if (!showChrome) {
     return <>{children}</>;
   }
 
-  // Loading state while checking auth
-  if (authLoading || tenantLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Not authenticated – render nothing while redirect fires
-  if (!isAuthenticated) {
-    return null;
-  }
-
+  // Always render the admin layout for non-public pages.
+  // If not authenticated, pages will show their content with
+  // empty data states (Supabase queries fail gracefully).
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       {/* Mobile overlay */}
@@ -79,7 +56,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         userRole={role}
         userName={profile?.display_name ?? undefined}
         can={can}
-        onSignOut={signOut}
+        onSignOut={isAuthenticated ? signOut : undefined}
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
       />
