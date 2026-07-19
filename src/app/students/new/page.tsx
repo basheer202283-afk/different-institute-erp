@@ -4,79 +4,56 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useCreateStudent } from "@/lib/hooks/use-students";
+import { studentFormSchema, type StudentFormValues } from "@/lib/validators/student";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCreateStudent } from "@/lib/hooks/use-students";
-import { ArrowRight, Save, Loader2, User } from "lucide-react";
+import { ArrowLeft, Save, Loader2, User, Shield, Heart, FileText } from "lucide-react";
 import Link from "next/link";
-import type { StudentFormData } from "@/lib/types/student";
-
-const schema = z.object({
-  first_name_ar: z.string().min(1, "الاسم الأول (عربي) مطلوب"),
-  last_name_ar: z.string().min(1, "اسم العائلة (عربي) مطلوب"),
-  first_name_en: z.string().optional(),
-  last_name_en: z.string().optional(),
-  registration_number: z.string().optional(),
-  national_id: z.string().optional(),
-  passport_number: z.string().optional(),
-  date_of_birth: z.string().optional(),
-  gender: z.string().optional(),
-  nationality: z.string().optional(),
-  mobile: z.string().optional(),
-  alternative_mobile: z.string().optional(),
-  email: z.string().email("البريد الإلكتروني غير صالح").optional().or(z.literal("")),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
-  status: z.enum(["active", "pending", "suspended", "graduated", "withdrawn"]).default("pending"),
-  guardian_name: z.string().optional(),
-  guardian_phone: z.string().optional(),
-  guardian_whatsapp: z.string().optional(),
-  guardian_email: z.string().email().optional().or(z.literal("")),
-  guardian_relationship: z.string().optional(),
-  guardian_address: z.string().optional(),
-  emergency_contact_name: z.string().optional(),
-  emergency_contact_phone: z.string().optional(),
-  medical_conditions: z.string().optional(),
-  allergies: z.string().optional(),
-  blood_group: z.string().optional(),
-  religion: z.string().optional(),
-  place_of_birth: z.string().optional(),
-  previous_school: z.string().optional(),
-  previous_grade: z.string().optional(),
-  notes: z.string().optional(),
-  registration_date: z.string().optional(),
-  admission_date: z.string().optional(),
-});
 
 export default function NewStudentPage() {
   const router = useRouter();
   const createStudent = useCreateStudent();
   const [activeTab, setActiveTab] = useState("personal");
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<StudentFormData>({
-    resolver: zodResolver(schema),
-    defaultValues: { status: "pending", country: "YE" },
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm<StudentFormValues>({
+    resolver: zodResolver(studentFormSchema),
+    defaultValues: {
+      status: "pending",
+      country: "اليمن",
+    },
   });
 
-  const onSubmit = async (data: StudentFormData) => {
-    createStudent.mutate(data, { onSuccess: () => router.push("/students") });
+  const onSubmit = async (data: StudentFormValues) => {
+    try {
+      await createStudent.mutateAsync(data);
+      router.push("/students");
+    } catch (error) {
+      // Error handled by hook
+    }
   };
 
   const tabs = [
     { id: "personal", label: "المعلومات الشخصية", icon: User },
-    { id: "guardian", label: "ولي الأمر", icon: User },
-    { id: "academic", label: "الأكاديمي", icon: User },
-    { id: "medical", label: "الطبي", icon: User },
+    { id: "guardian", label: "ولي الأمر", icon: Shield },
+    { id: "medical", label: "المعلومات الطبية", icon: Heart },
+    { id: "notes", label: "ملاحظات", icon: FileText },
   ];
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/students"><ArrowRight className="h-4 w-4" /></Link>
+          <Link href="/students">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
         </Button>
         <div>
           <h1 className="text-2xl font-bold">إضافة طالبة جديدة</h1>
@@ -86,7 +63,7 @@ export default function NewStudentPage() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
@@ -94,7 +71,9 @@ export default function NewStudentPage() {
               size="sm"
               onClick={() => setActiveTab(tab.id)}
               type="button"
+              className="flex items-center gap-2"
             >
+              <tab.icon className="h-4 w-4" />
               {tab.label}
             </Button>
           ))}
@@ -103,7 +82,9 @@ export default function NewStudentPage() {
         {/* Personal Information */}
         {activeTab === "personal" && (
           <Card>
-            <CardHeader><CardTitle>المعلومات الشخصية</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>المعلومات الشخصية</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div>
@@ -117,16 +98,12 @@ export default function NewStudentPage() {
                   {errors.last_name_ar && <p className="text-xs text-destructive mt-1">{errors.last_name_ar.message}</p>}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">رقم التسجيل</label>
+                  <label className="text-sm font-medium">رقم الطالبة</label>
                   <Input {...register("registration_number")} className="mt-1" />
                 </div>
                 <div>
                   <label className="text-sm font-medium">رقم الهوية</label>
                   <Input {...register("national_id")} className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">رقم الجواز</label>
-                  <Input {...register("passport_number")} className="mt-1" />
                 </div>
                 <div>
                   <label className="text-sm font-medium">الاسم الأول (إنجليزي)</label>
@@ -189,7 +166,9 @@ export default function NewStudentPage() {
         {/* Guardian Information */}
         {activeTab === "guardian" && (
           <Card>
-            <CardHeader><CardTitle>معلومات ولي الأمر</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>معلومات ولي الأمر</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div>
@@ -210,61 +189,12 @@ export default function NewStudentPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium">بريد ولي الأمر</label>
-                  <Input type="email" {...register("guardian_email")} className="mt-1" />
+                  <Input type="email" {...register("guardian_email")} className={`mt-1 ${errors.guardian_email ? "border-destructive" : ""}`} />
+                  {errors.guardian_email && <p className="text-xs text-destructive mt-1">{errors.guardian_email.message}</p>}
                 </div>
                 <div className="md:col-span-2">
                   <label className="text-sm font-medium">عنوان ولي الأمر</label>
                   <Input {...register("guardian_address")} className="mt-1" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Academic Information */}
-        {activeTab === "academic" && (
-          <Card>
-            <CardHeader><CardTitle>المعلومات الأكاديمية</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <div>
-                  <label className="text-sm font-medium">تاريخ التسجيل</label>
-                  <Input type="date" {...register("registration_date")} className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">تاريخ القبول</label>
-                  <Input type="date" {...register("admission_date")} className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">المدرسة السابقة</label>
-                  <Input {...register("previous_school")} className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">الصف السابق</label>
-                  <Input {...register("previous_grade")} className="mt-1" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Medical Information */}
-        {activeTab === "medical" && (
-          <Card>
-            <CardHeader><CardTitle>المعلومات الطبية</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium">فصيلة الدم</label>
-                  <Input {...register("blood_group")} className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">الديانة</label>
-                  <Input {...register("religion")} className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">مكان الميلاد</label>
-                  <Input {...register("place_of_birth")} className="mt-1" />
                 </div>
                 <div>
                   <label className="text-sm font-medium">جهة الطوارئ</label>
@@ -274,33 +204,73 @@ export default function NewStudentPage() {
                   <label className="text-sm font-medium">هاتف الطوارئ</label>
                   <Input {...register("emergency_contact_phone")} className="mt-1" />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Medical Information */}
+        {activeTab === "medical" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>المعلومات الطبية</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium">فصيلة الدم</label>
+                  <Input {...register("blood_group")} className="mt-1" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">الحساسيات</label>
+                  <Input {...register("allergies")} className="mt-1" />
+                </div>
                 <div className="md:col-span-2">
                   <label className="text-sm font-medium">الحالات الطبية</label>
-                  <textarea {...register("medical_conditions")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px] mt-1" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-sm font-medium">الحساسيات</label>
-                  <textarea {...register("allergies")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px] mt-1" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-sm font-medium">ملاحظات</label>
-                  <textarea {...register("notes")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[100px] mt-1" />
+                  <textarea
+                    {...register("medical_conditions")}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[100px] mt-1"
+                    placeholder="أي حالات مرضية..."
+                  />
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Submit */}
+        {/* Notes */}
+        {activeTab === "notes" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>ملاحظات</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <label className="text-sm font-medium">ملاحظات إضافية</label>
+                <textarea
+                  {...register("notes")}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[150px] mt-1"
+                  placeholder="أضف ملاحظات..."
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Submit Button */}
         <div className="flex justify-end gap-3 mt-6">
           <Button variant="outline" type="button" asChild>
             <Link href="/students">إلغاء</Link>
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? (
-              <><Loader2 className="ml-2 h-4 w-4 animate-spin" /> جاري الحفظ...</>
+              <>
+                <Loader2 className="ml-2 h-4 w-4 animate-spin" /> جاري الحفظ...
+              </>
             ) : (
-              <><Save className="ml-2 h-4 w-4" /> حفظ الطالبة</>
+              <>
+                <Save className="ml-2 h-4 w-4" /> حفظ الطالبة
+              </>
             )}
           </Button>
         </div>
