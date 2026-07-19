@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function UsersPage() {
+export default function AdminPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

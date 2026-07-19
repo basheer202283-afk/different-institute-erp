@@ -7,8 +7,8 @@ import { cn, ROLE_LABELS } from "@/lib/utils";
 import type { AppRole } from "@/lib/types/database";
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen, CreditCard,
-  CalendarCheck, Settings, Shield, Menu, X, LogOut, ChevronLeft,
-  Bell, BarChart3, ChevronRight
+  CalendarCheck, Settings, Shield, Menu, X, LogOut, Bell, BarChart3,
+  Award, Building2, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -22,17 +22,20 @@ interface NavItem {
 
 const mainNav: NavItem[] = [
   { title: "لوحة التحكم", titleEn: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "الطالبات", titleEn: "Students", href: "/students", icon: Users },
-  { title: "المدربات", titleEn: "Trainers", href: "/trainers", icon: GraduationCap },
-  { title: "الدورات", titleEn: "Courses", href: "/courses", icon: BookOpen },
+  { title: "الطالبات", titleEn: "Students", href: "/student", icon: Users },
+  { title: "المدربات", titleEn: "Trainers", href: "/trainer", icon: GraduationCap },
+  { title: "الدورات", titleEn: "Courses", href: "/institute", icon: BookOpen },
   { title: "الحضور", titleEn: "Attendance", href: "/attendance", icon: CalendarCheck },
   { title: "المالية", titleEn: "Finance", href: "/finance", icon: CreditCard, roles: ["owner", "manager", "accountant"] },
+  { title: "الشهادات", titleEn: "Certificates", href: "/certificates", icon: Award },
   { title: "التقارير", titleEn: "Reports", href: "/reports", icon: BarChart3, roles: ["owner", "manager"] },
+  { title: "المستندات", titleEn: "Documents", href: "/shared", icon: FileText },
   { title: "الإشعارات", titleEn: "Notifications", href: "/notifications", icon: Bell },
 ];
 
 const adminNav: NavItem[] = [
-  { title: "المستخدمين", titleEn: "Users", href: "/users", icon: Shield, roles: ["owner", "manager"] },
+  { title: "المعهد", titleEn: "Institute", href: "/institute", icon: Building2, roles: ["owner", "manager"] },
+  { title: "المستخدمين", titleEn: "Users", href: "/admin", icon: Shield, roles: ["owner", "manager"] },
   { title: "الإعدادات", titleEn: "Settings", href: "/settings", icon: Settings, roles: ["owner", "manager"] },
 ];
 
@@ -82,9 +85,7 @@ export function Sidebar({ userRole, userName, onSignOut }: SidebarProps) {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            القائمة الرئيسية
-          </p>
+          <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">القائمة الرئيسية</p>
           {filteredMainNav.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
@@ -93,9 +94,7 @@ export function Sidebar({ userRole, userName, onSignOut }: SidebarProps) {
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  isActive ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
                 onClick={() => setCollapsed(true)}
               >
@@ -108,9 +107,7 @@ export function Sidebar({ userRole, userName, onSignOut }: SidebarProps) {
 
           {filteredAdminNav.length > 0 && (
             <>
-              <p className="px-3 py-2 mt-6 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                الإدارة
-              </p>
+              <p className="px-3 py-2 mt-6 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">الإدارة</p>
               {filteredAdminNav.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -119,9 +116,7 @@ export function Sidebar({ userRole, userName, onSignOut }: SidebarProps) {
                     href={item.href}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      isActive ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
                     onClick={() => setCollapsed(true)}
                   >
@@ -154,12 +149,7 @@ export function Sidebar({ userRole, userName, onSignOut }: SidebarProps) {
         </div>
       </aside>
 
-      <Button
-        variant="outline"
-        size="icon"
-        className="fixed top-4 right-4 z-30 lg:hidden shadow-md"
-        onClick={() => setCollapsed(false)}
-      >
+      <Button variant="outline" size="icon" className="fixed top-4 right-4 z-30 lg:hidden shadow-md" onClick={() => setCollapsed(false)}>
         <Menu className="h-5 w-5" />
       </Button>
     </>

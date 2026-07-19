@@ -17,8 +17,8 @@ export default function HomePage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" asChild><Link href="/auth/login">تسجيل الدخول</Link></Button>
-            <Button asChild><Link href="/auth/register">إنشاء حساب</Link></Button>
+            <Button variant="ghost" asChild><Link href="/login">تسجيل الدخول</Link></Button>
+            <Button asChild><Link href="/register">إنشاء حساب</Link></Button>
           </div>
         </div>
       </header>
@@ -32,9 +32,7 @@ export default function HomePage() {
           </div>
           <div>
             <h1 className="text-4xl font-bold">معهد المختلفة للتدريب النسائي</h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-              نظام إدارة متكامل لإدارة المعهد بكفاءة واحترافية
-            </p>
+            <p className="mt-4 text-lg text-muted-foreground">نظام إدارة متكامل لإدارة المعهد بكفاءة واحترافية</p>
           </div>
           <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
             <div className="p-4 rounded-xl bg-muted/50">
@@ -51,7 +49,7 @@ export default function HomePage() {
             </div>
           </div>
           <Button size="lg" asChild>
-            <Link href="/auth/login">ابدأ الآن <ArrowLeft className="mr-2 h-4 w-4" /></Link>
+            <Link href="/login">ابدأ الآن <ArrowLeft className="mr-2 h-4 w-4" /></Link>
           </Button>
         </div>
       </main>

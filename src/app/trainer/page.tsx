@@ -5,7 +5,7 @@ import { GraduationCap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function TrainersPage() {
+export default function TrainerPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -13,7 +13,7 @@ export default function TrainersPage() {
           <h1 className="text-3xl font-bold">المدربات</h1>
           <p className="text-muted-foreground">إدارة بيانات المدربات</p>
         </div>
-        <Button asChild><Link href="/trainers/new"><Plus className="ml-2 h-4 w-4" /> إضافة مدربة</Link></Button>
+        <Button asChild><Link href="/trainer/new"><Plus className="ml-2 h-4 w-4" /> إضافة مدربة</Link></Button>
       </div>
       <Card>
         <CardContent className="p-12">

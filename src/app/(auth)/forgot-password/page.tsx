@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: FormData) => {
     setError(null);
     const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) setError(error.message);
     else setSent(true);
@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <div className="w-full max-w-md space-y-6">
-        <Link href="/auth/login" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link href="/login" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowRight className="h-4 w-4" /> العودة لتسجيل الدخول
         </Link>
         <div className="text-center">
@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
                 <h3 className="font-semibold">تحقق من بريدك الإلكتروني</h3>
                 <p className="text-sm text-muted-foreground">لقد أرسلنا رابط استعادة كلمة المرور</p>
                 <Button variant="outline" className="w-full" asChild>
-                  <Link href="/auth/login"><Mail className="ml-2 h-4 w-4" /> العودة لتسجيل الدخول</Link>
+                  <Link href="/login"><Mail className="ml-2 h-4 w-4" /> العودة لتسجيل الدخول</Link>
                 </Button>
               </div>
             ) : (

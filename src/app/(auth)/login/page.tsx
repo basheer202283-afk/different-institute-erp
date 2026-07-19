@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { GraduationCap, Loader2, Eye, EyeOff, ArrowRight } from "lucide-react";
-import { Suspense } from "react";
 
 const schema = z.object({
   email: z.string().email("البريد الإلكتروني غير صالح"),
@@ -68,7 +67,7 @@ function LoginForm() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">كلمة المرور</label>
-                  <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline">نسيت كلمة المرور؟</Link>
+                  <Link href="/forgot-password" className="text-xs text-primary hover:underline">نسيت كلمة المرور؟</Link>
                 </div>
                 <div className="relative">
                   <Input type={showPassword ? "text" : "password"} placeholder="أدخل كلمة المرور" {...register("password")} className={errors.password ? "border-destructive pl-10" : "pl-10"} />
@@ -86,7 +85,7 @@ function LoginForm() {
         </Card>
 
         <p className="text-center text-sm text-muted-foreground">
-          ليس لديك حساب؟ <Link href="/auth/register" className="text-primary hover:underline font-medium">إنشاء حساب</Link>
+          ليس لديك حساب؟ <Link href="/register" className="text-primary hover:underline font-medium">إنشاء حساب</Link>
         </p>
       </div>
     </div>

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,7 +22,6 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function RegisterPage() {
-  const router = useRouter();
   const supabase = createClient();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +49,7 @@ export default function RegisterPage() {
             </div>
             <h2 className="text-xl font-bold">تم إنشاء الحساب بنجاح</h2>
             <p className="text-muted-foreground">تحقق من بريدك الإلكتروني لتأكيد الحساب</p>
-            <Button asChild className="mt-4"><Link href="/auth/login">العودة لتسجيل الدخول</Link></Button>
+            <Button asChild className="mt-4"><Link href="/login">العودة لتسجيل الدخول</Link></Button>
           </CardContent>
         </Card>
       </div>
@@ -112,7 +110,7 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
         <p className="text-center text-sm text-muted-foreground">
-          لديك حساب بالفعل؟ <Link href="/auth/login" className="text-primary hover:underline font-medium">تسجيل الدخول</Link>
+          لديك حساب بالفعل؟ <Link href="/login" className="text-primary hover:underline font-medium">تسجيل الدخول</Link>
         </p>
       </div>
     </div>

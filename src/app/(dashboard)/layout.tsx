@@ -17,21 +17,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.replace("/auth/login"); return; }
+      if (!session) { router.replace("/login"); return; }
       const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
       setProfile(data as unknown as Profile | null);
       setLoading(false);
     };
     checkAuth();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((e) => {
-      if (e === "SIGNED_OUT") router.replace("/auth/login");
+      if (e === "SIGNED_OUT") router.replace("/login");
     });
     return () => subscription.unsubscribe();
   }, [supabase, router]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.replace("/auth/login");
+    router.replace("/login");
   };
 
   if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;

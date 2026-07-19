@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const publicPaths = ["/", "/auth/login", "/auth/register", "/auth/forgot-password"];
+const publicPaths = ["/", "/login", "/register", "/forgot-password"];
 
 function isPublicPath(pathname: string): boolean {
   return publicPaths.some((p) => pathname === p);
@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
   supabaseResponse.headers.set("X-XSS-Protection", "1; mode=block");
 
   if (isPublicPath(pathname)) {
-    if (user && (pathname === "/auth/login" || pathname === "/auth/register")) {
+    if (user && (pathname === "/login" || pathname === "/register")) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     return supabaseResponse;
@@ -43,7 +43,7 @@ export async function middleware(request: NextRequest) {
 
   if (!user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
+    url.pathname = "/login";
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
   }

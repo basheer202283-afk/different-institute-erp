@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
-export default function StudentsPage() {
+export default function StudentPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -14,7 +14,7 @@ export default function StudentsPage() {
           <h1 className="text-3xl font-bold">الطالبات</h1>
           <p className="text-muted-foreground">إدارة بيانات الطالبات</p>
         </div>
-        <Button asChild><Link href="/students/new"><Plus className="ml-2 h-4 w-4" /> إضافة طالبة</Link></Button>
+        <Button asChild><Link href="/student/new"><Plus className="ml-2 h-4 w-4" /> إضافة طالبة</Link></Button>
       </div>
       <Card>
         <CardContent className="p-4">
